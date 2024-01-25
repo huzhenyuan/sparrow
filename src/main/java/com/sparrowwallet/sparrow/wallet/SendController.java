@@ -569,6 +569,8 @@ public class SendController extends WalletFormController implements Initializabl
 
         try {
             List<Payment> payments = transactionPayments != null ? transactionPayments : getPayments();
+            payments = payments.stream().sorted(Comparator.comparing(Payment::getLabel)).toList();
+
             updateOptimizationButtons(payments);
             if(!userFeeSet.get() || (getFeeValueSats() != null && getFeeValueSats() > 0)) {
                 Wallet wallet = getWalletForm().getWallet();
@@ -693,7 +695,7 @@ public class SendController extends WalletFormController implements Initializabl
                             filters.add(presetUtxoSelector.asExcludeTxoFilter());
                             List<OutputGroup> outputGroups = wallet.getGroupedUtxos(filters, feeRate, AppServices.getMinimumRelayFeeRate(), Config.get().isGroupByAddress())
                                     .stream().filter(outputGroup -> outputGroup.getEffectiveValue() >= 0).collect(Collectors.toList());
-                            Collections.shuffle(outputGroups);
+                            //Collections.shuffle(outputGroups);
 
                             while(!outputGroups.isEmpty() && presetUtxoSelector.getPresetUtxos().stream().mapToLong(BlockTransactionHashIndex::getValue).sum() < e.getTargetValue()) {
                                 OutputGroup outputGroup = outputGroups.remove(0);
@@ -1512,7 +1514,7 @@ public class SendController extends WalletFormController implements Initializabl
 
             if(event.getUtxos() != null) {
                 List<BlockTransactionHashIndex> utxos = event.getUtxos();
-                utxoSelectorProperty.set(new PresetUtxoSelector(utxos, false, event.isRequireAllUtxos()));
+                utxoSelectorProperty.set(new PresetUtxoSelector(utxos, true, event.isRequireAllUtxos()));
             }
 
             txoFilterProperty.set(null);
